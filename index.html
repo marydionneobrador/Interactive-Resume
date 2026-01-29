@@ -1,0 +1,785 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<title>Interactive Resume - Letter Gate</title>
+
+<style>
+  body {
+    margin: 0;
+    overflow: hidden;
+    background: #fbd7e6;
+    font-family: Arial, sans-serif;
+  }
+
+  #game {
+    position: relative;
+    width: 100vw;
+    height: 100vh;
+    overflow: hidden;
+  }
+
+  /* START SCREEN */
+  #startScreen {
+    position: absolute;
+    inset: 0;
+    background: rgba(0,0,0,0.85);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    z-index: 50;
+    color: white;
+  }
+
+  #startBtn, #restartBtn, #startLevel2Btn, #startLevel3Btn {
+    padding: 14px 40px;
+    font-size: 18px;
+    border: none;
+    border-radius: 30px;
+    cursor: pointer;
+    background: #8b5cf6;
+    color: white;
+  }
+
+  /* CHECKLIST */
+  #checklistBtn {
+    position: absolute;
+    top: 15px;
+    left: 15px;
+    z-index: 20;
+    padding: 10px 16px;
+    border-radius: 20px;
+    border: none;
+    background: #8b5cf6;
+    color: white;
+    cursor: pointer;
+    font-size: 14px;
+  }
+
+  #checklistPanel {
+    position: absolute;
+    top: 60px;
+    left: 15px;
+    width: 280px;
+    background: rgba(0,0,0,0.85);
+    color: white;
+    padding: 20px;
+    border-radius: 12px;
+    z-index: 20;
+    display: none;
+  }
+
+  #checklistPanel h3 {
+    margin-top: 0;
+    margin-bottom: 10px;
+    font-size: 18px;
+  }
+
+  /* BACKGROUND */
+  .background {
+    position: absolute;
+    bottom: 200px;
+    width: 100vw;
+    height: 100vh;
+    top: 0;
+    left: 0;
+    background-image: url("background.jpg");
+    background-size: contain;
+    background-repeat: no-repeat;
+    background-position: top center;
+    background-color: #fbd7e6;
+    z-index: 1;
+  }
+
+  #bg1 { left: 0; }
+  #bg2 { left: 100vw; }
+
+  /* TREES */
+  .trees {
+    position: absolute;
+    bottom: 150;
+    width: 2500px;
+    height: 900px;
+    background-image: url("tree.png");
+    background-size: contain;
+    background-repeat: no-repeat;
+    z-index: 2;
+    pointer-events: none;
+  }
+
+  #trees1 { left: 0; }
+  #trees2 { left: 1200px; }
+
+  /* CHARACTER */
+  #character {
+    position: absolute;
+    bottom: 150px;
+    left: 20%;
+    width: 200px;
+    height: 250px;
+    background-image: url("princess.png");
+    background-size: contain;
+    background-repeat: no-repeat;
+    background-position: bottom center;
+    z-index: 10;
+    animation: fairyBounce 1.2s ease-in-out infinite;
+  }
+
+  @keyframes fairyBounce {
+    0% { transform: translateY(0); }
+    50% { transform: translateY(-10px); }
+    100% { transform: translateY(0); }
+  }
+
+  /* TRASH */
+  .trash {
+    position: absolute;
+    bottom: 300px;
+    width: 200px;
+    height: 100px;
+    background-image: url("trash.png");
+    background-size: contain;
+    background-repeat: no-repeat;
+    background-position: bottom center;
+    cursor: pointer;
+    z-index: 6;
+  }
+
+  /* GIFT BOXES */
+  .gift {
+    position: absolute;
+    bottom: 30px;
+    width: 300px;
+    height: 200px;
+    background-image: url("box_close.png");
+    background-size: contain;
+    background-repeat: no-repeat;
+    background-position: bottom center;
+    cursor: pointer;
+    z-index: 6;
+  }
+
+  .gift3 {
+    position: absolute;
+    bottom: 30px;
+    width: 250px;
+    height: 180px;
+    background-image: url("gift_close.png");
+    background-size: contain;
+    background-repeat: no-repeat;
+    background-position: bottom center;
+    cursor: pointer;
+    z-index: 6;
+  }
+
+  /* LEVEL 2 REWARDS */
+  .reward-chest {
+    position: absolute;
+    width: 300px;
+    height: 200px;
+    background-image: url("chest_close_new.png");
+    background-size: contain;
+    background-repeat: no-repeat;
+    background-position: bottom center;
+    cursor: pointer;
+    z-index: 6;
+  }
+
+  /* KEY */
+  .key-item {
+    position: absolute;
+    width: 60px;
+    height: 60px;
+    background-image: url("key.png");
+    background-size: contain;
+    background-repeat: no-repeat;
+    z-index: 100;
+    pointer-events: none;
+    transition: transform 1s ease-out, opacity 1s ease-out;
+  }
+
+  /* PAPER ANIMATION */
+  .paper-item {
+    position: absolute;
+    width: 60px;
+    height: 80px;
+    background: #fff;
+    border: 2px solid #8b5cf6;
+    border-radius: 5px;
+    z-index: 15;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 30px;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+    animation: paperPop 0.8s ease-out forwards;
+  }
+
+  @keyframes paperPop {
+    0% { transform: translateY(0) scale(0); opacity: 0; }
+    100% { transform: translateY(-100px) scale(1); opacity: 1; }
+  }
+
+  #instruction {
+    position: absolute;
+    bottom: 10px;
+    width: 100%;
+    text-align: center;
+    color: #000000;
+    font-size: 14px;
+    z-index: 10;
+  }
+
+  #level1message {
+    position: absolute;
+    top: 50px;
+    width: 100%;
+    text-align: center;
+    color: #802feb;
+    font-size: 50px;
+    z-index: 11;
+    opacity: 0.5;
+  }
+
+  #pointsPanel {
+    position: absolute;
+    top: 15px;
+    right: 15px;
+    background: rgba(139, 92, 246, 0.85);
+    color: white;
+    padding: 10px 16px;
+    border-radius: 20px;
+    font-size: 14px;
+    z-index: 25;
+    font-weight: bold;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  #chest {
+    position: absolute;
+    bottom: 30px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 300px;
+    height: 200px;
+    background-image: url('chest_closed.png');
+    background-size: contain;
+    background-repeat: no-repeat;
+    cursor: pointer;
+    z-index: 101;
+    display: none;
+  }
+
+  #chestMessage, #congratsMessage {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    color: #fff;
+    background: rgba(0,0,0,0.85);
+    padding: 20px 40px;
+    border-radius: 12px;
+    font-size: 22px;
+    text-align: center;
+    z-index: 103;
+    font-family: "Times New Roman";
+    display: none;
+  }
+
+  #userInfo, #objectiveInfo {
+    position: absolute;
+    top: 40%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    color: #fff;
+    background: rgba(0,0,0,0.85);
+    padding: 20px 40px;
+    border-radius: 12px;
+    font-size: 20px;
+    text-align: left;
+    z-index: 103;
+    font-family: "Times New Roman";
+    display: none;
+  }
+
+  #nextBtn, .closeBtn {
+    margin-top: 20px;
+    padding: 10px 25px;
+    background: #8b5cf6;
+    color: white;
+    border: none;
+    border-radius: 20px;
+    cursor: pointer;
+    font-weight: bold;
+    display: block;
+    margin-left: auto;
+  }
+
+  #restartBtn {
+    display: none;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 200;
+  }
+
+  .key-needed-msg {
+    position: absolute;
+    background: rgba(233, 172, 220, 0.8);
+    color: rgb(0, 0, 0);
+    padding: 5px 10px;
+    border-radius: 10px;
+    font-size: 14px;
+    pointer-events: none;
+    z-index: 200;
+    animation: fadeOut 2s forwards;
+  }
+
+  @keyframes fadeOut {
+    0% { opacity: 1; transform: translateY(0); }
+    100% { opacity: 0; transform: translateY(-20px); }
+  }
+</style>
+</head>
+
+<body>
+<div id="game">
+
+  <div id="startScreen">
+    <h1 id="screenTitle">✨ Interactive Resume ✨</h1>
+    <button id="startBtn">Start Journey</button>
+    <button id="startLevel2Btn" style="display:none;">Start Level 2</button>
+    <button id="startLevel3Btn" style="display:none;">Start Level 3</button>
+  </div>
+
+  <button id="checklistBtn">☰ Guide</button>
+  <div id="checklistPanel">
+    <h3>Journey Guide</h3>
+    <div>🌸 Pick up trash to earn points</div>
+    <div>🧚‍♀️ Reach 50 points to get the reward</div>
+    <div>✨ Unlock Level 2</div>
+  </div>
+
+  <div id="pointsPanel">
+    🎀 Points: <span id="pointsCount">0</span>
+  </div>
+
+  <div class="background" id="bg1"></div>
+  <div class="background" id="bg2"></div>
+
+  <div class="trees" id="trees1"></div>
+  <div class="trees" id="trees2"></div>
+
+  <div id="character"></div>
+
+  <div id="instruction">Use ← → arrow keys to move</div>
+
+  <div id="level1message">Level 1: The First Discovery</div>
+
+  <div id="chestMessage"> Congrats! You finished Level 1! <br> Click the CHEST to claim your reward🎀</div>
+  
+  <div id="congratsMessage">
+    Congratulation for finishing all the level! <br> Thank you for trying this game🎀 <br>
+    <button class="closeBtn" id="closeCongrats">Close</button>
+  </div>
+
+  <button id="restartBtn">Restart Game</button>
+
+  <div id="chest"></div>
+
+  <div id="userInfo">
+    <h2>PERSONAL INFORMATION</h2>
+    <p>Name: Mary Dionne M. Obrador</p>
+    <p>Gender: Female</p>
+    <p>Birthday: October 23, 2005</p>
+    <p>Address: Brgy. San Dionisio, Gatchalian Subdivison, Paranaque City</p>
+    <p>Contact No.: 09657583986</p>
+    <p>Email: mdionneobrador@gmail.com</p>
+    <button id="nextBtn">Continue</button>
+  </div>
+
+  <div id="objectiveInfo">
+    <div id="objectiveContent">
+        </div>
+    <button class="closeBtn" id="closeObj">Continue</button>
+  </div>
+
+</div>
+
+<script>
+const bg1 = document.getElementById("bg1");
+const bg2 = document.getElementById("bg2");
+const trees1 = document.getElementById("trees1");
+const trees2 = document.getElementById("trees2");
+const character = document.getElementById("character");
+const startBtn = document.getElementById("startBtn");
+const startLevel2Btn = document.getElementById("startLevel2Btn");
+const startLevel3Btn = document.getElementById("startLevel3Btn");
+const restartBtn = document.getElementById("restartBtn");
+const startScreen = document.getElementById("startScreen");
+const screenTitle = document.getElementById("screenTitle");
+const checklistBtn = document.getElementById("checklistBtn");
+const checklistPanel = document.getElementById("checklistPanel");
+const pointsPanel = document.getElementById("pointsPanel");
+const pointsCountEl = document.getElementById("pointsCount");
+const chest = document.getElementById("chest");
+const chestMessage = document.getElementById("chestMessage");
+const congratsMessage = document.getElementById("congratsMessage");
+const userInfo = document.getElementById("userInfo");
+const objectiveInfo = document.getElementById("objectiveInfo");
+const objectiveContent = document.getElementById("objectiveContent");
+const levelMessage = document.getElementById("level1message");
+const nextBtn = document.getElementById("nextBtn");
+
+const speed = 30;
+const screenWidth = window.innerWidth;
+
+let bg1X = 0, bg2X = screenWidth, trees1X = 0, trees2X = 1200;
+let hasStarted = false, points = 0, levelComplete = false, chestOpened = false;
+let hasKey = false; 
+let level3Pass = false;
+
+let trashArray = [];
+let giftArray = [];
+let rewardChestArray = [];
+let gift3Array = [];
+let activeKeys = []; 
+const minBgX = 0;
+
+const level2Data = [
+    { title: "CAREER OBJECTIVE", text: "Aspiring Software Engineer and Computer Engineering graduate eager to contribute to Innotech Corp. Equipped with strong skills in Python, R, and Java, and driven to develop efficient, high-quality software solutions while supporting team goals through technical excellence and a strong willingness to learn." },
+    { title: "EDUCATIONAL BACKGROUND", text: "<b>Polytechnic University of the Philippines | Col. E De Leon St. Wawa Brgy. Sto. Niño  Parañaque City</b><br><i>Bachelor of Science in Computer Engineering (2023-2027)</i><br><br><br><b>Lemery Senior High School | A. Atienza Street, Barangay Bagong Sikat Lemery, Batangas</b><br><i>Science, Technology, Engineering, and Mathematics (2021 – 2023)</i><br><br><br><b>Gov. Feliciano Leviste Memorial National High School | Illustre Avenue Street, Barangay Bagong Sikat Lemery, Batangas</b><br><i>Junior High School (2017 -  2021)</i>" },
+    { title: "INTERESTS", text: "<ul style='padding-left: 20px; margin: 0;'><li>Art</li><li>Reading</li><li>Writing</li><li>Photography</li></ul>" }
+];
+
+startBtn.addEventListener("click", () => {
+  startScreen.style.display = "none";
+  hasStarted = true;
+  createTrash();
+});
+
+startLevel2Btn.addEventListener("click", () => {
+  startScreen.style.display = "none";
+  startLevel2Btn.style.display = "none";
+  createKeyBox();
+  createRewardChests();
+});
+
+startLevel3Btn.addEventListener("click", () => {
+  startScreen.style.display = "none";
+  startLevel3Btn.style.display = "none";
+  createLevel3Gifts();
+});
+
+restartBtn.addEventListener("click", () => {
+  location.reload();
+});
+
+checklistBtn.addEventListener("click", () => {
+  checklistPanel.style.display = checklistPanel.style.display === "block" ? "none" : "block";
+});
+
+nextBtn.addEventListener("click", () => {
+  userInfo.style.display = "none";
+  chest.style.display = "none";
+  pointsPanel.style.display = "none";
+  
+  // Level 2
+  screenTitle.textContent = "✨ Level 2 Unlocked ✨";
+  startScreen.style.display = "flex";
+  startLevel2Btn.style.display = "block";
+  startBtn.style.display = "none";
+
+  checklistPanel.innerHTML = `
+    <h3>Level 2: The Hidden Key</h3>
+    <div>🔑 Collect the hidden key to unlock the rewards.</div>
+    <div>📦 Open each chest to reveal the information inside.</div>
+    <div>📖 Read all details to unlock the path to Level 3.</div>
+  `;
+  levelMessage.textContent = "Level 2: The Hidden Key";
+  chestOpened = true;
+});
+
+document.getElementById('closeObj').addEventListener("click", () => {
+  objectiveInfo.style.display = 'none';
+  if (levelMessage.textContent.includes("Level 2")) {
+    const allRead = rewardChestArray.length > 0 && rewardChestArray.every(rc => rc.paperRead);
+    if (allRead) {
+      // Level 3
+      screenTitle.textContent = "✨ Level 3 Unlocked ✨";
+      startScreen.style.display = "flex";
+      startLevel3Btn.style.display = "block";
+
+      levelMessage.textContent = "Level 3: The Secret Gift";
+      checklistPanel.innerHTML = `
+        <h3>Level 3: The Secret Gift</h3>
+        <div>🎁 Choose one of the four gift boxes.</div>
+        <div>✨ Find the right gift hidden inside to complete your journey!</div>
+      `;
+    }
+  } else if (levelMessage.textContent.includes("Level 3")) {
+    congratsMessage.style.display = "block";
+  }
+});
+
+document.getElementById('closeCongrats').addEventListener("click", () => {
+  congratsMessage.style.display = "none";
+  restartBtn.style.display = "block";
+});
+
+document.addEventListener("keydown", (e) => {
+  if (!hasStarted) return;
+  if (levelComplete && !chestOpened) return;
+  if (objectiveInfo.style.display === "block") return;
+  if (congratsMessage.style.display === "block") return;
+  if (startScreen.style.display === "flex") return;
+
+  if (e.key === "ArrowRight") {
+    let blockingTrash = trashArray.find(t => t.active && t.x < 300);
+    let blockingChest = rewardChestArray.find(rc => (!rc.opened || !rc.paperRead) && rc.x < 350);
+    let blockingGift3 = gift3Array.find(g => !level3Pass && g.x < 350);
+    if (blockingTrash || blockingChest || blockingGift3) {
+      console.log("Path blocked!");
+    } else {
+      moveWorld(-1);
+    }
+  }
+  if (e.key === "ArrowLeft") {
+    moveWorld(1);
+  }
+});
+
+function moveWorld(direction) {
+  let moveAmount = speed * direction * 0.2;
+  let newBg1X = bg1X + moveAmount;
+  if (direction === 1 && newBg1X > minBgX) return;
+  bg1X = newBg1X;
+  bg2X += moveAmount;
+  trees1X += moveAmount;
+  trees2X += moveAmount;
+  bg1.style.left = bg1X + "px";
+  bg2.style.left = bg2X + "px";
+  trees1.style.left = trees1X + "px";
+  trees2.style.left = trees2X + "px";
+  trashArray.forEach(t => { t.x += moveAmount; t.el.style.left = t.x + "px"; });
+  giftArray.forEach(g => { g.x += moveAmount; g.el.style.left = g.x + "px"; });
+  rewardChestArray.forEach(rc => {
+    rc.x += moveAmount;
+    rc.el.style.left = rc.x + "px";
+    if(rc.paper) {
+      rc.paperX += moveAmount;
+      rc.paper.style.left = rc.paperX + "px";
+    }
+  });
+  gift3Array.forEach(g => {
+    g.x += moveAmount;
+    g.el.style.left = g.x + "px";
+    if(g.icon) {
+        g.iconX += moveAmount;
+        g.icon.style.left = g.iconX + "px";
+    }
+  });
+  activeKeys.forEach(k => {
+    k.x += moveAmount;
+    k.el.style.left = k.x + "px";
+  });
+  if (bg1X <= -screenWidth) bg1X = bg2X + screenWidth;
+  if (bg2X <= -screenWidth) bg2X = bg1X + screenWidth;
+  if (trees1X <= -1200) trees1X = trees2X + 1200;
+  if (trees2X <= -1200) trees2X = trees1X + 1200;
+}
+
+function createTrash() {
+  for (let i = 0; i < 5; i++) {
+    const t = document.createElement("div");
+    t.classList.add("trash");
+    let xPos = 800 + (i * 300);
+    t.style.left = xPos + "px";
+    t.style.bottom = "45px";
+    document.getElementById("game").appendChild(t);
+    const trashObj = { el: t, x: xPos, active: true };
+    trashArray.push(trashObj);
+    t.addEventListener("click", () => {
+      points += 10;
+      pointsCountEl.textContent = points;
+      t.style.display = "none";
+      trashObj.active = false;
+      if (points >= 50 && !levelComplete) {
+        levelComplete = true;
+        chestMessage.style.display = "block";
+        chest.style.display = "block";
+      }
+    });
+  }
+}
+
+function createKeyBox() {
+    const g = document.createElement("div");
+    g.classList.add("gift");
+    let xPos = 1300;
+    g.style.left = xPos + "px";
+    g.style.bottom = "30px";
+    document.getElementById("game").appendChild(g);
+    const giftObj = { el: g, x: xPos, opened: false };
+    giftArray.push(giftObj);
+    g.addEventListener("click", () => {
+      if (!giftObj.opened) {
+        g.style.backgroundImage = "url('box_open.png')";
+        giftObj.opened = true;
+        hasKey = true; 
+        showKeyEffect(giftObj.x);
+      }
+    });
+}
+
+function createRewardChests() {
+  for (let i = 0; i < 3; i++) {
+    const rc = document.createElement("div");
+    rc.classList.add("reward-chest");
+    let xPos = 1800 + (i * 400); 
+    rc.style.left = xPos + "px";
+    rc.style.bottom = "30px";
+    document.getElementById("game").appendChild(rc);
+    const chestObj = { 
+        el: rc, 
+        x: xPos, 
+        opened: false, 
+        paper: null, 
+        paperX: 0, 
+        paperRead: false,
+        data: level2Data[i] 
+    };
+    rewardChestArray.push(chestObj);
+    rc.addEventListener("click", () => {
+      if (!chestObj.opened) {
+        if (hasKey) {
+          rc.style.backgroundImage = "url('chest_open_new.png')";
+          chestObj.opened = true;
+          spawnPaper(chestObj);
+        } else {
+          showStatusMsg(chestObj.x, "You need to get the key!");
+        }
+      }
+    });
+  }
+}
+
+function createLevel3Gifts() {
+    for (let i = 0; i < 4; i++) {
+        const g = document.createElement("div");
+        g.classList.add("gift3");
+        let xPos = 2000 + (i * 150); 
+        g.style.left = xPos + "px";
+        document.getElementById("game").appendChild(g);
+        const giftObj = { el: g, x: xPos, opened: false, hasInfo: (i === 2), icon: null, iconX: 0 };
+        gift3Array.push(giftObj);
+        g.addEventListener("click", () => {
+            if (giftObj.opened) return;
+            g.style.backgroundImage = "url('gift_open.png')";
+            giftObj.opened = true;
+            if (giftObj.hasInfo) {
+                const icon = document.createElement("div");
+                icon.classList.add("paper-item");
+                icon.innerHTML = "✉️";
+                let iX = giftObj.x + 100;
+                icon.style.left = iX + "px";
+                icon.style.bottom = "130px";
+                document.getElementById("game").appendChild(icon);
+                giftObj.icon = icon;
+                giftObj.iconX = iX;
+                icon.addEventListener("click", () => {
+                    objectiveContent.innerHTML = `
+                        <h2>SKILLS</h2>
+                        <p><b>Technical Skills</b></p>
+                        <ul style="padding-left: 20px; margin-top: -10px;">
+                            <li>AutoCAD 2D Drafting and 3D modeling</li>
+                            <li>Python and R</li>
+                            <li>Java and HTML</li>
+                        </ul>
+                        <p><b>Soft Skills</b></p>
+                        <ul style="padding-left: 20px; margin-top: -10px;">
+                            <li>Problem-solving</li>
+                            <li>Teamwork</li>
+                            <li>Adaptability</li>
+                        </ul>`;
+                    objectiveInfo.style.display = "block";
+                    icon.style.display = "none";
+                    level3Pass = true;
+                });
+            } else {
+                showStatusMsg(giftObj.x, "try again");
+            }
+        });
+    }
+}
+
+function showStatusMsg(x, text) {
+  const msg = document.createElement("div");
+  msg.className = "key-needed-msg";
+  msg.innerText = text;
+  msg.style.left = (x + 50) + "px";
+  msg.style.bottom = "200px";
+  document.getElementById("game").appendChild(msg);
+  setTimeout(() => msg.remove(), 2000);
+}
+
+function spawnPaper(chestObj) {
+  const paper = document.createElement("div");
+  paper.classList.add("paper-item");
+  paper.innerHTML = "📄";
+  let pX = chestObj.x + 120;
+  paper.style.left = pX + "px";
+  paper.style.bottom = "130px";
+  document.getElementById("game").appendChild(paper);
+  chestObj.paper = paper;
+  chestObj.paperX = pX;
+  paper.addEventListener("click", () => {
+    objectiveContent.innerHTML = `<h2>${chestObj.data.title}</h2><p>${chestObj.data.text}</p>`;
+    objectiveInfo.style.display = "block";
+    paper.style.display = "none";
+    chestObj.paperRead = true;
+  });
+}
+
+function showKeyEffect(x) {
+    const key = document.createElement("div");
+    key.classList.add("key-item");
+    let keyX = x + 120; 
+    key.style.left = keyX + "px";
+    key.style.bottom = "180px";
+    document.getElementById("game").appendChild(key);
+    const keyObj = { el: key, x: keyX };
+    activeKeys.push(keyObj);
+    setTimeout(() => {
+        key.style.transform = "translateY(-120px)";
+        key.style.opacity = "0";
+    }, 50);
+    setTimeout(() => { 
+        key.remove(); 
+        activeKeys = activeKeys.filter(k => k !== keyObj);
+    }, 1100);
+}
+
+chest.addEventListener("click", () => {
+  if (chestOpened) return;
+  chestMessage.style.display = "none";
+  const frames = ['chest_open1.png', 'chest_open2.png', 'chest_open3.png', 'chest_open4.png'];
+  let i = 0;
+  const interval = setInterval(() => {
+    if (i >= frames.length) {
+      clearInterval(interval);
+      userInfo.style.display = "block";
+    } else {
+      chest.style.backgroundImage = `url('${frames[i]}')`;
+      i++;
+    }
+  }, 200);
+});
+</script>
+</body>
+</html>
